@@ -14,6 +14,10 @@ const handelValidationErrorDB =(error)=>{
     const errors =Object.values(error.errors).map((el) =>el.message);
     return new AppError(`Invalid input data  ${errors.join('. ')}`,400);
 }
+
+const handelJWTError =()=>new AppError('Invalid token! please sing in again' ,401);
+
+const handelJWTExpiredError =()=>{new AppError('Your token has expired! Please log in again.', 401)}
 const sendErrorProd  =(err , res)=>{
     if(err.isOperational){
         res.status(err.statusCode).json({
@@ -22,7 +26,7 @@ const sendErrorProd  =(err , res)=>{
         })
     }
     else{
-       /*  console.error(err); */
+        console.error(err);
         res.status(500).json({
             "status": "Error",
             "message": "Something went wrong",
@@ -67,6 +71,12 @@ module.exports =(err ,req ,res ,next)=>{
         }
         else if(error.name === 'ValidationError'){
             error =handelValidationErrorDB(error);
+        }
+        else if(error.name === 'JsonWebTokenError'){
+            error =handelJWTError();
+        }
+        else if(error.name === 'TokenExpiredError'){
+            error =handelJWTExpiredError();
         }
         sendErrorProd(error , res);
     }   
