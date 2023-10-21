@@ -1,4 +1,4 @@
-const tourModel =require('./../models/tourModel');
+/* const tourModel =require('./../models/tourModel'); */
 
 class ApiFeatures{
     constructor(query ,queryStr){
@@ -8,15 +8,17 @@ class ApiFeatures{
     filter(){
         let filterObject = {...this.queryStr};
         ['limit' ,'page' ,'sort','fields'].forEach((e) => delete filterObject[e]);
-        filterObject = JSON.stringify(filterObject);
-        filterObject =filterObject.replace(/\b(gt | gte | ls | lse)\b/g ,(match)=>`$${match}`);
-        this.query=  tourModel.find(JSON.parse(filterObject));
+        let filterStr = JSON.stringify(filterObject);
+        //in regex do not write space 
+        filterStr =filterStr.replace(/\b(gt|gte|lt|lte)\b/g ,(match)=>`$${match}`);
+        this.query=  this.query.find(JSON.parse(filterStr));
 
         return this;
     }
 
     sort(){
         if(this.queryStr.sort){
+            console.log(this.queryStr.sort);
             const sortBy =this.queryStr.sort.split(',').join(" ");
             this.query=this.query.sort(sortBy);
         }

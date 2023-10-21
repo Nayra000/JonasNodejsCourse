@@ -1,8 +1,8 @@
 const userModel = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync') ;
-const AppError  =require('./../utils/appErorr');
+const AppError  =require('./../utils/appError');
 
-
+const factory = require('./factoryController');
 
 
 const filterObj =(obj ,...allowedFields)=>{
@@ -15,43 +15,15 @@ const filterObj =(obj ,...allowedFields)=>{
     return newObj;
 }
 
-exports.getAllUsers =catchAsync(async(req,res,next)=>{ 
-    const users =await userModel.find();
-    res.status(200).json({
-        "statuts" :"suceess",
-        "length":users.length,
-        "timeRequest" :req.requestTime,
-        "data" :{users}
-    })
-})
+exports.getAllUsers =factory.getAll(userModel);
+exports.getSingleUser =factory.getSingleOne(userModel);
 
-exports.getSingleUser =(req,res)=>{
-    res.status(500).json({
-        "statuts" :"ERROR",
-        "timeRequest" :req.requestTime,
-        data:null
-    })
-}
+
+
 
 exports.createNewUser =(req,res)=>{
     res.status(500).json({
-        "statuts" :"ERROR",
-        "timeRequest" :req.requestTime,
-        data:null
-    })
-}
-
-exports.updateUser =(req,res)=>{
-    res.status(500).json({
-        "statuts" :"ERROR",
-        "timeRequest" :req.requestTime,
-        data:null
-    })
-}
-
-exports.deleteUser =(req,res)=>{
-    res.status(500).json({
-        "statuts" :"ERROR",
+        "statuts" :"Go to sign up route",
         "timeRequest" :req.requestTime,
         data:null
     })
@@ -86,3 +58,14 @@ exports.deleteMe =catchAsync(async(req , res, next)=>{
     })
 
 })
+
+exports.getMe =(req , res , next)=>{
+    req.params.id =req.user.id;
+    console.log(req.params.id);
+    next();
+}
+
+
+
+exports.updateUser =factory.updateOne(userModel);
+exports.deleteUser = factory.deleteOne(userModel);

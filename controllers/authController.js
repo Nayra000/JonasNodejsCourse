@@ -1,6 +1,6 @@
 const userModel = require('./../models/userModel');
 const catchAsync =require('./../utils/catchAsync');
-const AppError =require('./../utils/appErorr');
+const AppError =require('../utils/appError');
 const crypto = require('crypto');
 const sendEmail =require('./../utils/email.js');
 const {promisify} =require('util')

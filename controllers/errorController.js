@@ -1,4 +1,4 @@
-const AppError =require('./../utils/appErorr');
+const AppError =require('./../utils/appError');
 
 const handelCastErrorDB =(error)=>{
     return new AppError(`Invalid ${error.path} :${error.value}` ,400);

@@ -8,7 +8,8 @@ const hpp = require('hpp');
 const globalErrorHandler= require('./controllers/errorController');
 const usersRouter =require('./routers/userRouter');
 const toursRouter =require('./routers/tourRouter');
-const AppError = require('./utils/appErorr');
+const reviewsRouter = require('./routers/reviewRouter');
+const AppError = require('./utils/appError');
 
 
 
@@ -59,6 +60,7 @@ app.use((req ,res ,next)=>{
 //Routes
 app.use('/api/v1/users' ,usersRouter);
 app.use('/api/v1/tours' ,toursRouter);
+app.use('/api/v1/reviews',reviewsRouter)
 
 
 //To handel unhandeled routes

@@ -1,8 +1,9 @@
+const AppError = require('../utils/appError');
 const tourModel =require('./../models/tourModel');
-const ApiFeatures =require(`${__dirname}/../utils/apiFeatures`);
 const catchAsync =require('./../utils/catchAsync');
-const AppError  =require('./../utils/appErorr');
+/* const AppError  =require('./../utils/appError'); */
 
+const factory = require('./factoryController');
 
 exports.aliasTopTours =(req ,res ,next)=>{
     req.query.sort= '-ratingsAverage,price';
@@ -12,67 +13,12 @@ exports.aliasTopTours =(req ,res ,next)=>{
 }
 
 
-exports.getAllTours =catchAsync(async (req ,res ,next)=>{
-    const counts =await tourModel.countDocuments(); 
-    let query =new ApiFeatures("" , req.query).filter().sort().limit().paginate(counts) ;
-    const tours = await query.query;
-    res.status(200).json({
-        "statuts" :"suceess",
-        "length":tours.length,
-        "timeRequest" :req.requestTime,
-        "data" :{tours}
-    })
-}
-)
+exports.getAllTours =factory.getAll(tourModel);
+exports.getSingleTour =factory.getSingleOne(tourModel , {path :'reviews'});
+exports.createNewTour= factory.createOne(tourModel);
+exports.updateTour = factory.updateOne(tourModel);
+exports.deleteTour =factory.deleteOne(tourModel);
 
-
-exports.getSingleTour =catchAsync(async (req ,res ,next)=>{
-    const tour =await tourModel.findById(req.params.id); 
-    if(!tour) {
-        return next(new AppError('No tour found' ,404));
-    }
-    res.status(200).json({
-        "statuts" :"suceess",
-        "timeRequest" :req.requestTime,
-        "data" : tour
-    })
-})
-
-
-exports.createNewTour= catchAsync(async(req ,res ,next)=>{ 
-    const newTour = await tourModel.create({...req.body});
-    res.status(201).json({
-        "status" :"success",
-        "data" :{newTour}
-    })
-}
-)
-
-exports.updateTour = catchAsync(async (req ,res ,next)=>{
-    const updatedTour = await tourModel.findByIdAndUpdate(req.params.id ,req.body ,{
-        new :true ,
-        runValidators:true
-    })
-    if(!updatedTour) {
-        return next(new AppError('No tour found' ,404));
-    }
-    res.status(200).json({
-        "status" :"success",
-        updatedTour
-    })
-})
-
-
-exports.deleteTour = catchAsync(async (req ,res ,next)=>{
-    const deleteTour =await tourModel.findByIdAndDelete(req.params.id);
-    if(!deleteTour) {
-        return next(new AppError('No tour found' ,404));
-    }
-    res.status(204).json({
-        "status" :"success",
-        "data" :null
-    })
-})
 
 exports.tourStates =catchAsync (async (req , res ,next)=>{
     const states = await tourModel.aggregate(
@@ -141,6 +87,62 @@ exports.getMonthlyPlane =catchAsync(async(req ,res ,next)=>{
 
 
 
+exports.getToursWithin =catchAsync(async(req ,res ,next)=>{
+    const {distance ,latlng , unit} =req.params;
+    const [lat ,lon] =latlng.split(',');
+    const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+    if(!lat || !lon){
+        next(new AppError( 'Please provide latitutr and longitude in the format lat,lng.',
+        400));
+    }
+    const tours = await tourModel.find({
+        startLocation : {$geoWithin :{
+            $centerSphere:[[lon ,lat] ,radius]
+        }}
+    })
+    res.status(200).json({
+        status :"success",
+        length :tours.length,
+        data :{tours}
+    })
+
+})
 
 
+exports.getDistance=catchAsync(async (req , res , next) =>{
+    const {latlng , unit} =req.params;
+    const [lat ,lon] =latlng.split(',');
+    const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+    if(!lat || !lon){
+        next(new AppError( 'Please provide latitutr and longitude in the format lat,lng.',
+        400));
+    }
+    const distance =await tourModel.aggregate([
+        {
+            $geoNear :{
+                near :{
+                    type: "Point",
+                    //Do not forget to convert lon lat to numbers 
+                    coordinates :[lon *1 , lat *1]
+                },
+                distanceField :"distance" ,
+                distanceMultiplier :multiplier
+            }
+        },
+        {
+            $project :{
+                name :1,
+                distance:1
+            }
+        }
+    ])
+    res.status(200).json({
+        "status": "success" ,
+        "length" :distance.length ,
+        "data":{distance}
 
+    })
+    
+
+})
