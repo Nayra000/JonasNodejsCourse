@@ -70,6 +70,9 @@ exports.protect =catchAsync(async (req ,res , next)=>{
     if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token =req.headers.authorization.split(' ')[1];
     }
+    else if(req.cookies.jwt){
+        token=req.cookies.jwt;
+    }
     
     if(!token){
         return next(new AppError('You are not logged in ! Please login to access',401));
@@ -78,7 +81,7 @@ exports.protect =catchAsync(async (req ,res , next)=>{
 
     // 2) Verification token
     const decode = await promisify(jwt.verify)(token ,process.env.JWT_SECRET);
-    console.log(decode);
+    /* console.log(decode); */
 
     //Note after deleting user or changing his password the token still valid and you should handle these cases
     // 3) Check if user still exists
@@ -92,8 +95,46 @@ exports.protect =catchAsync(async (req ,res , next)=>{
     }
 
     req.user=currentUser;
+    res.locals.user=req.user;
     next();
 })
+
+//for render pages
+exports.isLoggedIn = async (req ,res , next)=>{
+    let token ;
+    if(req.cookies.jwt){
+        try{
+            token=req.cookies.jwt;
+            const decode = await promisify(jwt.verify)(token ,process.env.JWT_SECRET);
+            const currentUser = await userModel.findById(decode.id);
+            if(!currentUser){
+                return next()
+            }
+            if(currentUser.changePasswordAfter(decode.iat)){
+                return next();
+            }
+            //locals is as container contain variables avaliable for template
+            res.locals.user=currentUser;
+            return next();
+        }
+        catch(err){
+            return next();
+        }
+
+    }
+    next();
+}
+exports.logout =(req , res)=>{
+    const cookieOptions ={
+        httpOnly:true,
+        expires:new Date(Date.now()+10*1000)
+    }
+    res.cookie('jwt' ,'loggedout' ,cookieOptions);
+    res.status(200).json({status:'success'});
+}
+
+
+
 
 exports.restrictTo =(...roles)=>{
     return(catchAsync(async (req , res, next)=>{

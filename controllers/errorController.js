@@ -18,30 +18,45 @@ const handelValidationErrorDB =(error)=>{
 const handelJWTError =()=>new AppError('Invalid token! please sing in again' ,401);
 
 const handelJWTExpiredError =()=>{new AppError('Your token has expired! Please log in again.', 401)}
-const sendErrorProd  =(err , res)=>{
+const sendErrorProd  =(err ,req ,res)=>{
     if(err.isOperational){
-        res.status(err.statusCode).json({
-            "status": err.status,
-            "message": err.message,
-        })
+        if(req.originalUrl.startsWith('api')){
+            return res.status(err.statusCode).json({
+                "status": err.status,
+                "message": err.message,
+            })
+        }
+        else{
+            return res.status(err.statusCode).render('error' ,{title :'Not found' ,msg :err.message});
+        }
     }
     else{
-        console.error(err);
-        res.status(500).json({
-            "status": "Error",
-            "message": "Something went wrong",
-        })
+        if(req.originalUrl.startsWith('api')){
+            console.error(err);
+            return res.status(500).json({
+                "status": "Error",
+                "message": "Something went wrong",
+            })
+        }
+        else{
+            return res.status(err.statusCode).render('error' ,{title :'Not found' ,msg :'Something went wrong'});
+
+        }
     }
 
 };
 
-const sendErrorDev =(err ,res)=>{
-    res.status(err.statusCode).json({
-        "status": err.status,
-        "message": err.message,
-        "error":err,
-        "stack" :err.stack
-    })
+const sendErrorDev =(err , req,res)=>{
+    
+    if(req.originalUrl.startsWith('/api')){
+        return res.status(err.statusCode).json({
+            "status": err.status,
+            "message": err.message,
+            "error":err,
+            "stack" :err.stack
+        })
+    }
+    return res.status(err.statusCode).render('error' ,{ title: 'Something went wrong!',msg: err.message})
 
 }
 
@@ -52,7 +67,7 @@ module.exports =(err ,req ,res ,next)=>{
     err.status = err.status || 'error';
     err.statusCode =err.statusCode ||500;
     if(process.env.NODE_ENV === 'development'){
-        sendErrorDev(err , res);
+        sendErrorDev(err ,req ,res);
     }
     else if(process.env.NODE_ENV === 'production'){
         /* let error ={... err}; */
@@ -62,7 +77,7 @@ module.exports =(err ,req ,res ,next)=>{
         own properties from the source object to the new object, but they do 
         not copy the prototype reference.
         */
-        let error = Object.create(err)
+        let error = Object.create(err);
         if(error.name === "CastError"){
             error =handelCastErrorDB(error);
         }
@@ -78,7 +93,7 @@ module.exports =(err ,req ,res ,next)=>{
         else if(error.name === 'TokenExpiredError'){
             error =handelJWTExpiredError();
         }
-        sendErrorProd(error , res);
+        sendErrorProd(error ,req,res);
     }   
 
 }

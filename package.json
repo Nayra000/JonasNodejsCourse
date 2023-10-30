@@ -2,17 +2,23 @@
   "name": "natoursapi",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "source": "./public/js/index.js",
+  "main": "./public/js/bundle.js",
   "scripts": {
     "start:dev": "SET NODE_ENV=development&&nodemon server.js",
     "start:prod": "SET NODE_ENV=production&&nodemon server.js",
-    "debug": "ndb server.js"
+    "debug": "ndb server.js",
+    "watch": "parcel watch",
+    "build": "parcel build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "axios": "^1.5.1",
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.1.1",
@@ -23,6 +29,7 @@
     "mongoose": "^7.5.3",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.6",
+    "pug": "^3.0.2",
     "slugify": "^1.6.6",
     "validator": "^13.11.0",
     "xss-clean": "^0.1.4"
@@ -36,6 +43,7 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.12.4",
+    "parcel": "^2.10.1",
     "prettier": "^1.17.0"
   }
 }
