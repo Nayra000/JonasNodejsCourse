@@ -2,9 +2,9 @@ const userModel = require('./../models/userModel');
 const catchAsync =require('./../utils/catchAsync');
 const AppError =require('../utils/appError');
 const crypto = require('crypto');
-const sendEmail =require('./../utils/email.js');
 const {promisify} =require('util')
 const jwt =require('jsonwebtoken')
+const Email =require('./../utils/email');
 
 const signToken =(id)=>{
     return jwt.sign({id } ,process.env.JWT_SECRET,{
@@ -21,8 +21,9 @@ const createSendToken = (user , status , res)=>{
     if(process.env.NODE_ENV ==='production'){
         cookieOptions.secure =true;
     }
-
     res.cookie('jwt' ,token ,cookieOptions);
+    
+
     user.password =undefined //in order not to appear in respnose
     res.status(status).json({
         "status": "success",
@@ -41,6 +42,8 @@ exports.singup =catchAsync(async (req , res , next) =>{
         "changedPassword" :req.body.changedPassword,
         "role":req.body.role
     },);
+
+    await new Email(newUser ,`${req.protocol}://${req.get('host')}/me`).sendWelcome();
 
     createSendToken(newUser , 201 ,res);
 })
@@ -77,6 +80,7 @@ exports.protect =catchAsync(async (req ,res , next)=>{
     if(!token){
         return next(new AppError('You are not logged in ! Please login to access',401));
     }
+    /* console.log(token); */
 
 
     // 2) Verification token
@@ -114,6 +118,7 @@ exports.isLoggedIn = async (req ,res , next)=>{
                 return next();
             }
             //locals is as container contain variables avaliable for template
+            req.user=currentUser;
             res.locals.user=currentUser;
             return next();
         }
@@ -159,16 +164,9 @@ exports.forgotPassword =catchAsync(async(req ,res , next)=>{
     await user.save({ validateBeforeSave: false });
 
     //3)send resetToken to user email
-    const resetURL =`${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-    const message =`Forgot your password ? Submit a PATCH request with your new password and password confirmation to :${resetURL}\n
-    If you did not forget your password please ignore this email`;
     try{
-    await sendEmail({
-        to:user.email ,
-        subject :'Your password reset token (valid to 10 mints)',
-        message
-    })
-
+    const resetURL =`${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    await new Email(user ,resetURL).resetPassword();
     res.status(200).json({
         status : 'success',
         message:'Token sent to email'

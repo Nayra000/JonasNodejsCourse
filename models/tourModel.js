@@ -71,7 +71,17 @@ const tourSchema = new mongoose.Schema(
             required :[true ,"The image cover is required"]
         },
         "images" :[String] ,
-        "startDates":[Date],
+        /*  "startDates":[
+            {
+                date :Date ,
+                participants: Number ,
+                isSoldout :{
+                    type :Boolean ,
+                    default :false
+                }
+            }
+        ] */
+        "startDates" :[Date],
         "startLocation":{
             //Geospatial
             "type":{

@@ -39,25 +39,22 @@ const $c67cb762f0198593$export$de026b00723010c1 = (type, msg)=>{
 };
 
 
-const $70af9284e599e604$export$692b4a7cc7a486ce = async (email, password)=>{
+const $70af9284e599e604$export$692b4a7cc7a486ce = async (type, data)=>{
     try {
         const res = await axios({
             method: "POST",
-            url: "http://localhost:5000/api/v1/users/singin",
-            data: {
-                email: email,
-                password: password
-            }
+            url: type === "signin" ? "http://localhost:5000/api/v1/users/singin" : "http://localhost:5000/api/v1/users/signup",
+            data: data
         });
         if (res.data.status === "success") {
-            (0, $c67cb762f0198593$export$de026b00723010c1)("success", "Logged in successfully!");
+            (0, $c67cb762f0198593$export$de026b00723010c1)("success", `${type.toUpperCase()} successfully!`);
             window.setTimeout(()=>{
                 location.assign("/");
             }, 1000);
         }
     } catch (err) {
         console.log(err);
-        (0, $c67cb762f0198593$export$de026b00723010c1)("error", "Email or password is incorrect");
+        (0, $c67cb762f0198593$export$de026b00723010c1)("error", err.response.data.message);
     }
 };
 const $70af9284e599e604$export$e8df664d4863167e = async ()=>{
@@ -68,7 +65,7 @@ const $70af9284e599e604$export$e8df664d4863167e = async ()=>{
         });
         if (res.data.status === "success") {
             (0, $c67cb762f0198593$export$de026b00723010c1)("success", "Logged out successfully!");
-            /* window.location.href ='/'; */ window.setTimeout(()=>{
+            window.setTimeout(()=>{
                 location.reload(true);
                 location.assign("/");
             }, 1000);
@@ -101,6 +98,25 @@ const $936fcc27ffb6bbb1$export$1bfa820af5bb4b7c = async (type, data)=>{
 };
 
 
+const $12e4c09e240ceffa$export$f0bf07efc4a101de = async (price, items)=>{
+    try {
+        const res = await axios({
+            method: "POST",
+            url: "http://localhost:5000/api/v1/bookings/checkout",
+            data: {
+                price: price,
+                items: items
+            }
+        });
+        /* console.log(res.data); */ if (res.data.status === "success") window.setTimeout(()=>{
+            location.assign(res.data.link);
+        }, 1000);
+    } catch (err) {
+        console.log(err.response.data.message);
+    }
+};
+
+
 const $d0f7ce18c37ad6f6$var$map = document.getElementById("map");
 if ($d0f7ce18c37ad6f6$var$map) {
     const loactions = JSON.parse($d0f7ce18c37ad6f6$var$map.dataset.locations);
@@ -111,19 +127,35 @@ if ($d0f7ce18c37ad6f6$var$logginForm) $d0f7ce18c37ad6f6$var$logginForm.addEventL
     e.preventDefault();
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    (0, $70af9284e599e604$export$692b4a7cc7a486ce)(email, password);
+    (0, $70af9284e599e604$export$692b4a7cc7a486ce)("signin", {
+        email: email,
+        password: password
+    });
+});
+const $d0f7ce18c37ad6f6$var$signupForm = document.querySelector(".signup--form");
+if ($d0f7ce18c37ad6f6$var$signupForm) $d0f7ce18c37ad6f6$var$signupForm.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("passwordConfirm").value;
+    (0, $70af9284e599e604$export$692b4a7cc7a486ce)("signup", {
+        name: name,
+        email: email,
+        password: password,
+        passwordConfirm: passwordConfirm
+    });
 });
 const $d0f7ce18c37ad6f6$var$logoutBtn = document.querySelector(".nav__el--logout");
 if ($d0f7ce18c37ad6f6$var$logoutBtn) $d0f7ce18c37ad6f6$var$logoutBtn.addEventListener("click", (0, $70af9284e599e604$export$e8df664d4863167e));
 const $d0f7ce18c37ad6f6$var$userDataForm = document.querySelector(".form-user-data");
 if ($d0f7ce18c37ad6f6$var$userDataForm) $d0f7ce18c37ad6f6$var$userDataForm.addEventListener("submit", async (e)=>{
     e.preventDefault();
-    const email = document.getElementById("email").value;
-    const name = document.getElementById("name").value;
-    await (0, $936fcc27ffb6bbb1$export$1bfa820af5bb4b7c)("data", {
-        name: name,
-        email: email
-    });
+    const form = new FormData();
+    form.append("name", document.getElementById("name").value);
+    form.append("email", document.getElementById("email").value);
+    form.append("photo", document.getElementById("photo").files[0]);
+    await (0, $936fcc27ffb6bbb1$export$1bfa820af5bb4b7c)("data", form);
 });
 const $d0f7ce18c37ad6f6$var$userPasswordForm = document.querySelector(".form-user-password");
 if ($d0f7ce18c37ad6f6$var$userPasswordForm) $d0f7ce18c37ad6f6$var$userPasswordForm.addEventListener("submit", async (e)=>{
@@ -143,6 +175,12 @@ if ($d0f7ce18c37ad6f6$var$userPasswordForm) $d0f7ce18c37ad6f6$var$userPasswordFo
     document.getElementById("password").value = "";
     document.getElementById("password-confirm").value = "";
 });
+const $d0f7ce18c37ad6f6$var$bookBtn = document.getElementById("bookingBtn");
+if ($d0f7ce18c37ad6f6$var$bookBtn) $d0f7ce18c37ad6f6$var$bookBtn.addEventListener("click", (e)=>{
+    e.target.textContent = "Processing...";
+    const { tourPrice: tourPrice, tourItem: tourItem } = e.target.dataset;
+    (0, $12e4c09e240ceffa$export$f0bf07efc4a101de)(tourPrice, tourItem);
+/*  e.target.textContent = 'Book Tour Now !'; */ });
 
 
 //# sourceMappingURL=bundle.js.map

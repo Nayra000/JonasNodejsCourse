@@ -2,10 +2,11 @@
 const express =require('express');
 const userController =require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+const bookingRouter = require('./bookingRouter');
 
 const Router =express.Router();  
 
-
+Router.use('/:userId/bookings' ,bookingRouter);
 
 Router.post('/signup',authController.singup);
 Router.post('/singin' ,authController.signin);
@@ -20,7 +21,7 @@ Router.patch('/resetPassword/:token' ,authController.resetPassword);
 Router.use(authController.protect);
 
 Router.patch('/updatePassword' ,authController.updatePassword);
-Router.patch('/updateMe' ,userController.updateMe);
+Router.patch('/updateMe' ,userController.uploadUserPhoto ,userController.resizeUserPhoto,userController.updateMe);
 Router.delete('/deleteMe' ,userController.deleteMe);
 Router.get('/me' ,userController.getMe ,userController.getSingleUser)
 

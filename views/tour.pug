@@ -75,16 +75,19 @@ block content
       each review in tour.reviews 
         +reviewCard(review)
 
-      
-  section.section-cta
-    .cta
-      .cta__img.cta__img--logo
-        img(src='/img/logo-white.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[0]}`, alt=`${tour.name}`)
-      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[1]}`, alt=`${tour.name}`)
-      .cta__content
-        h2.heading-secondary What are you waiting for?
-        p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
-        button.btn.btn--green.span-all-rows Book tour now!
+  if(!isbooked)    
+    section.section-cta
+      .cta
+        .cta__img.cta__img--logo
+          img(src='/img/logo-white.png', alt='Natours logo')
+        img.cta__img.cta__img--1(src=`/img/tours/${tour.images[0]}`, alt=`${tour.name}`)
+        img.cta__img.cta__img--2(src=`/img/tours/${tour.images[1]}`, alt=`${tour.name}`)
+        .cta__content
+          h2.heading-secondary What are you waiting for?
+          p.cta__text= `${tour.duration} days. 1 adventure. Infinite memories. Make it yours today!`
+          if user
+            button.btn.btn--green.span-all-rows#bookingBtn(data-tour-price=tour.price data-tour-item ={name :tour.name ,amount_cents :tour.price ,description:tour.summary ,quantity:1 ,tourId :tour._id }) Book tour now!
+          else
+            a.btn.btn--green.span-all-rows(href='/login') Login for booking!
   script(src ='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js' integrity='sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=' crossorigin='')
   

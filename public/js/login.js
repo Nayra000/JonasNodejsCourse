@@ -2,15 +2,15 @@
 
 import {showAlert} from './alert';
 
-export const loginUser=async (email ,password) =>{
+export const loginUser=async (type ,data) =>{
     try{  
         const res = await axios({
                 method:'POST' ,
-                url:'http://localhost:5000/api/v1/users/singin' ,
-                data:{email ,password}
+                url: type==='signin' ? 'http://localhost:5000/api/v1/users/singin' :'http://localhost:5000/api/v1/users/signup',
+                data
         }) 
         if (res.data.status === 'success') {
-            showAlert('success', 'Logged in successfully!');
+            showAlert('success', `${type.toUpperCase()} successfully!`);
             window.setTimeout(() => {
                 location.assign('/');
             }, 1000);
@@ -18,7 +18,7 @@ export const loginUser=async (email ,password) =>{
     }
     catch(err){
         console.log(err);
-        showAlert('error', 'Email or password is incorrect');
+        showAlert('error', err.response.data.message);
     }
 
 }
@@ -31,14 +31,10 @@ export const logoutUser = async ()=>{
         })
         if (res.data.status === 'success') {
             showAlert('success', 'Logged out successfully!');
-            /* window.location.href ='/'; */
-            
             window.setTimeout(() => {
                 location.reload(true);
                 location.assign('/');
             }, 1000);
-            
-            
         }
     }
     catch(err){

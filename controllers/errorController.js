@@ -20,7 +20,7 @@ const handelJWTError =()=>new AppError('Invalid token! please sing in again' ,40
 const handelJWTExpiredError =()=>{new AppError('Your token has expired! Please log in again.', 401)}
 const sendErrorProd  =(err ,req ,res)=>{
     if(err.isOperational){
-        if(req.originalUrl.startsWith('api')){
+        if(req.originalUrl.startsWith('/api')){
             return res.status(err.statusCode).json({
                 "status": err.status,
                 "message": err.message,
@@ -31,11 +31,11 @@ const sendErrorProd  =(err ,req ,res)=>{
         }
     }
     else{
-        if(req.originalUrl.startsWith('api')){
+        if(req.originalUrl.startsWith('/api')){
             console.error(err);
             return res.status(500).json({
                 "status": "Error",
-                "message": "Something went wrong",
+                "message": err.message,
             })
         }
         else{

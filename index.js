@@ -9,15 +9,17 @@ const hpp = require('hpp');
 const globalErrorHandler= require('./controllers/errorController');
 const usersRouter =require('./routers/userRouter');
 const toursRouter =require('./routers/tourRouter');
+const bookingRouter = require('./routers/bookingRouter');
 const reviewsRouter = require('./routers/reviewRouter');
 const viewRouter =require('./routers/viewRouter') ;
 const AppError = require('./utils/appError');
 const cookieParser =require('cookie-parser');
-
+const cors =require('cors')
 
 
 const app =express();
 
+app.use(cors());
 //set security http header
 /* app.use(helmet()); */
 const scriptSrcUrls = ['https://unpkg.com/', 'https://tile.openstreetmap.org'];
@@ -97,6 +99,7 @@ app.set('views' ,path.join(__dirname ,'views'));
 app.use('/api/v1/users' ,usersRouter);
 app.use('/api/v1/tours' ,toursRouter);
 app.use('/api/v1/reviews',reviewsRouter)
+app.use('/api/v1/bookings' ,bookingRouter);
 app.use('/' ,viewRouter)
 
 

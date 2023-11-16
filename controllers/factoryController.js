@@ -64,9 +64,16 @@ exports.getAll = (Model) =>{
     return catchAsync(async (req ,res ,next)=>{
         let filterObj ={};
         //To get the reviews for certain tour
+        //To get the bookings for certain tour
         if(req.params.tourId){
             filterObj ={tour : req.params.tourId};
         }
+
+        if(req.params.userId){
+            filterObj ={user : req.params.userId};
+        }
+
+
         const counts =await Model.countDocuments(); 
         const query =new ApiFeatures(Model.find(filterObj) , req.query)
         .filter()
